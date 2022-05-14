@@ -1,0 +1,8 @@
+schema: http://3.218.67.164:9019/graphql/
+documents: './src/**/*.graphql'
+generates:
+  ./src/models/generated.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typed-document-node

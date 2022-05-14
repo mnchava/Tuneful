@@ -1,0 +1,133 @@
+mutation Login($username: String!, $password: String!) {
+  tokenAuth(username: $username, password: $password) {
+    payload
+    token
+  }
+}
+mutation CreateUser($username: String!, $email: String!, $password: String!) {
+  createUser(username: $username, email: $email, password: $password) {
+    username
+    email
+  }
+}
+
+query UserInfo($username: String!) {
+  getUser(username: $username) {
+    id
+    isSuperuser
+    username
+    email
+    isStaff
+    dateJoined
+    image
+    playlistSet {
+      id
+      name
+      public
+    }
+  }
+}
+
+query GetLibrary {
+  getLibrary {
+    id
+    songs {
+      id
+      album {
+        id
+        title
+        image
+        externalImageUrl
+        releaseDate
+        likes
+        albumDuration
+        price
+        trackNumber
+      }
+      artist {
+        name
+      }
+      audioFile
+      duration
+      indexInAlbum
+      likes
+      price
+      title
+    }
+  }
+}
+
+query GetSongs {
+  getSongs {
+    id
+    album {
+      id
+      title
+      image
+      externalImageUrl
+      releaseDate
+      likes
+      albumDuration
+      price
+      trackNumber
+    }
+    artist {
+      name
+    }
+    audioFile
+    duration
+    indexInAlbum
+    likes
+    price
+    title
+  }
+}
+
+query GetAlbums {
+  getAlbums {
+    id
+    title
+    artist {
+      name
+    }
+    image
+    externalImageUrl
+    releaseDate
+    likes
+    price
+    genre {
+      name
+    }
+    songSet {
+      id
+      album {
+        id
+        title
+        image
+        externalImageUrl
+        releaseDate
+        likes
+        albumDuration
+        price
+        trackNumber
+      }
+      artist {
+        name
+      }
+      audioFile
+      duration
+      indexInAlbum
+      likes
+      price
+      title
+    }
+    albumDuration
+    trackNumber
+  }
+}
+
+mutation AddToLibrary($libId: ID!, $songIds: [ID]!) {
+  addToLibrary(libId: $libId, songIds: $songIds) {
+    added
+  }
+}
