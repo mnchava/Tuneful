@@ -1,8 +1,17 @@
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import FastForwardIcon from '@mui/icons-material/FastForward';
+import FastRewindIcon from '@mui/icons-material/FastRewind';
 import LogoutTwoToneIcon from '@mui/icons-material/LogoutTwoTone';
+import LoopIcon from '@mui/icons-material/Loop';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Typography } from '@mui/material';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import VolumeMuteIcon from '@mui/icons-material/VolumeMute';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { Avatar, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import MuiDrawer from '@mui/material/Drawer';
@@ -13,13 +22,31 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { CSSObject, styled, Theme, useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player';
+import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 import { routes } from '../routes';
+import useLocalStorage from '../hooks/useLocalStorage';
 import Login from '../views/login';
 import Signup from '../views/signup';
 import Protected from './protected';
+import { useQuery } from '@apollo/client';
+import { GetLibraryQuery, GetLibraryQueryVariables, GetLibraryDocument } from '../models/gql';
+import { ISong } from '../types';
+
 
 const drawerWidth = 180;
+
+const playerIcons = {
+	play: <PlayArrowIcon fontSize="large" />,
+	pause: <PauseIcon fontSize="large" />,
+	rewind: <FastRewindIcon fontSize="large" />,
+	forward: <FastForwardIcon fontSize="large" />,
+	previous: <SkipPreviousIcon />,
+	next: <SkipNextIcon />,
+	loop: <LoopIcon />,
+	volume: <VolumeUpIcon />,
+	volumeMute: <VolumeMuteIcon />,
+};
 
 const openedMixin = (theme: Theme): CSSObject => ({
 	width: drawerWidth,
@@ -72,6 +99,16 @@ export default function MiniDrawer() {
 	const theme = useTheme();
 	const [open, setOpen] = useState(false);
 
+	const [currentSong, setCurrentSong] = useLocalStorage("currentSong", "{}");
+	const [playlist, setPlaylist] = useState<ISong[]>([]);
+
+	useQuery<GetLibraryQuery, GetLibraryQueryVariables>(GetLibraryDocument, {
+		onCompleted: (data) => {
+			setPlaylist(data.getLibrary?.songs || []);
+		}
+	})
+
+
 	let navigate = useNavigate();
 
 	useEffect(() => {
@@ -91,6 +128,16 @@ export default function MiniDrawer() {
 
 	const handleDrawerClose = () => {
 		setOpen(false);
+	};
+
+	let activeStyle = {
+		textDecoration: "none",
+		color: theme.palette.primary.main
+	};
+
+	let inactiveStyle = {
+		textDecoration: "none",
+		color: "#fff",
 	};
 
 	return (
@@ -119,7 +166,9 @@ export default function MiniDrawer() {
 				<Divider />
 				<List>
 					{routes.map((route, index) => (
-						<Link to={route.path} key={route.key} style={{ textDecoration: "none" }}>
+						<NavLink to={route.path} key={route.key}
+							style={({ isActive }) => (isActive ? activeStyle : inactiveStyle)}
+						>
 							<ListItemButton
 								key={route.key}
 								sx={{
@@ -137,39 +186,41 @@ export default function MiniDrawer() {
 								>
 									{<route.icon />}
 								</ListItemIcon>
-								<ListItemText primary={route.title} sx={{ opacity: open ? 1 : 0, color: theme.palette.text.primary }} />
+								<ListItemText primary={route.title} sx={{ opacity: open ? 1 : 0 }} />
 							</ListItemButton>
-						</Link>
+						</NavLink>
 					))}
 				</List>
-				<Divider />
-				{localStorage.getItem('token') != null && <List>
-					<ListItemButton
-						sx={{
-							minHeight: 48,
-							justifyContent: open ? 'initial' : 'center',
-							px: 2.5,
-						}}
-						onClick={() => {
-							console.log("log out");
-							localStorage.removeItem("loggedUser");
-							localStorage.removeItem("token");
-							navigate("/login");
-						}
-						}
-					>
-						<ListItemIcon
+				< Divider />
+				{
+					localStorage.getItem('token') != null && <List>
+						<ListItemButton
 							sx={{
-								minWidth: 0,
-								mr: open ? 3 : 'auto',
-								justifyContent: 'center',
+								minHeight: 48,
+								justifyContent: open ? 'initial' : 'center',
+								px: 2.5,
 							}}
+							onClick={() => {
+								console.log("log out");
+								localStorage.removeItem("loggedUser");
+								localStorage.removeItem("token");
+								navigate("/login");
+							}
+							}
 						>
-							<LogoutTwoToneIcon />
-						</ListItemIcon>
-						<ListItemText primary={"Log out"} sx={{ opacity: open ? 1 : 0, color: theme.palette.text.primary }} />
-					</ListItemButton>
-				</List>}
+							<ListItemIcon
+								sx={{
+									minWidth: 0,
+									mr: open ? 3 : 'auto',
+									justifyContent: 'center',
+								}}
+							>
+								<LogoutTwoToneIcon />
+							</ListItemIcon>
+							<ListItemText primary={"Log out"} sx={{ opacity: open ? 1 : 0, color: theme.palette.text.primary }} />
+						</ListItemButton>
+					</List>
+				}
 			</Drawer>
 			<Box component="main" sx={{ flexGrow: 1, p: 3 }}>
 				<Routes>
@@ -191,7 +242,73 @@ export default function MiniDrawer() {
 						}
 					/>
 				</Routes>
+				{localStorage.getItem('token') != null ?
+					<AudioPlayer
+						src={currentSong ? "http://3.218.67.164:9019/" + JSON.parse(currentSong).audioFile : ""}
+						layout="stacked-reverse"
+						onPlayError={err => console.log(err)}
+						onError={err => console.log(err)}
+						autoPlayAfterSrcChange
+						showSkipControls
+						showJumpControls={false}
+						showFilledVolume
+						autoPlay
+						customIcons={playerIcons}
+						customAdditionalControls={[]}
+						customControlsSection={
+							[
+								RHAP_UI.VOLUME,
+								RHAP_UI.MAIN_CONTROLS,
+								RHAP_UI.CURRENT_TIME,
+								<div style={{ fontWeight: "800" }}>/</div>,
+								RHAP_UI.DURATION,
+							]
+						}
+						customProgressBarSection={
+							[
+								RHAP_UI.PROGRESS_BAR,
+							]
+						}
+						customVolumeControls={[]}
+						style={{
+							// width: `calc(100%${open ? "-180px" : ""})`,
+							// position: "absolute",
+							// bottom: 3
+							margin: "24px auto"
+						}}
+						onClickNext={e => {
+							if (currentSong) {
+								let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
+								const index = playlist.indexOf(current);
+								const next = index < playlist.length - 1 ? index + 1 : 0;
+								setCurrentSong(JSON.stringify(playlist[next]));
+							}
+						}}
+						onClickPrevious={e => {
+							if (currentSong) {
+								let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
+								const index = playlist.indexOf(current);
+								const next = index === 0 ? playlist.length - 1 : index - 1;
+								setCurrentSong(JSON.stringify(playlist[next]));
+							}
+						}}
+						onEnded={(e) => {
+							if (currentSong) {
+								let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
+								const index = playlist.indexOf(current);
+								const next = index < playlist.length - 1 ? index + 1 : 0;
+								setCurrentSong(JSON.stringify(playlist[next]));
+							}
+						}}
+						header={PlayerHeader(JSON.parse(currentSong))}
+					/> : <></>}
 			</Box>
-		</Box>
+		</Box >
 	);
+}
+
+const PlayerHeader = (song: ISong) => {
+	return <>
+		<Avatar src={song.album.externalImageUrl || ""} sx={{ width: "100px", height: "100px" }} variant="square" />
+	</>
 }

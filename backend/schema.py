@@ -19,6 +19,11 @@ class Query(graphene.ObjectType):
 
     get_songs = DjangoListField(SongType)
 
+    get_song = graphene.Field(SongType, id=graphene.ID(required=True))
+
+    def resolve_get_song(self, info, id=graphene.ID(required=True)):
+        return Song.objects.get(pk=id)
+
     get_playlists = DjangoListField(PlaylistType)
 
     get_library = graphene.Field(UserLibraryType)

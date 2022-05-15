@@ -40,7 +40,7 @@ export type Scalars = {
 export type AlbumType = {
   __typename?: "AlbumType";
   albumDuration?: Maybe<Scalars["String"]>;
-  artist?: Maybe<ArtistType>;
+  artist: ArtistType;
   externalImageUrl?: Maybe<Scalars["String"]>;
   genre: Array<GenreType>;
   id: Scalars["ID"];
@@ -566,6 +566,7 @@ export type ArtistType = {
   image?: Maybe<Scalars["String"]>;
   name: Scalars["String"];
   songSet: Array<SongType>;
+  topSongs?: Maybe<Array<Maybe<SongType>>>;
 };
 
 export type DeleteJsonWebTokenCookie = {
@@ -679,10 +680,15 @@ export type Query = {
   getArtists?: Maybe<Array<ArtistType>>;
   getLibrary?: Maybe<UserLibraryType>;
   getPlaylists?: Maybe<Array<PlaylistType>>;
+  getSong?: Maybe<SongType>;
   getSongs?: Maybe<Array<SongType>>;
   getUser?: Maybe<UserType>;
   orders?: Maybe<Array<Maybe<OrderType>>>;
   viewer?: Maybe<UserType>;
+};
+
+export type QueryGetSongArgs = {
+  id: Scalars["ID"];
 };
 
 export type QueryGetUserArgs = {
@@ -699,7 +705,7 @@ export type Refresh = {
 export type SongType = {
   __typename?: "SongType";
   album?: Maybe<AlbumType>;
-  artist: Array<ArtistType>;
+  artist: ArtistType;
   /** Allowed type - .mp3 */
   audioFile: Scalars["String"];
   duration?: Maybe<Scalars["String"]>;
@@ -826,13 +832,14 @@ export type GetLibraryQuery = {
         trackNumber: number;
       };
       artist: {
+        __typename?: "ArtistType";
         id: string;
         name: string;
         country: string;
         followers: number;
         externalImageUrl: string;
         image: string;
-      }[];
+      };
     }>;
   } | null;
 };
@@ -862,7 +869,7 @@ export type GetSongsQuery = {
       price?: number | null;
       trackNumber?: number | null;
     } | null;
-    artist: Array<{ __typename?: "ArtistType"; name: string }>;
+    artist: { __typename?: "ArtistType"; name: string };
   }> | null;
 };
 
@@ -881,7 +888,7 @@ export type GetAlbumsQuery = {
     price?: number | null;
     albumDuration?: string | null;
     trackNumber?: number | null;
-    artist?: { __typename?: "ArtistType"; name: string } | null;
+    artist: { __typename?: "ArtistType"; name: string };
     genre: Array<{ __typename?: "GenreType"; name: string }>;
     songSet: Array<{
       __typename?: "SongType";
@@ -904,7 +911,7 @@ export type GetAlbumsQuery = {
         price?: number | null;
         trackNumber?: number | null;
       } | null;
-      artist: Array<{ __typename?: "ArtistType"; name: string }>;
+      artist: { __typename?: "ArtistType"; name: string };
     }>;
   }> | null;
 };
@@ -919,6 +926,28 @@ export type AddToLibraryMutation = {
   addToLibrary?: {
     __typename?: "LibraryMutation";
     added?: number | null;
+  } | null;
+};
+
+export type GetSongQueryVariables = Exact<{
+  id: Scalars["ID"];
+}>;
+
+export type GetSongQuery = {
+  __typename?: "Query";
+  getSong?: {
+    __typename?: "SongType";
+    id: string;
+    title: string;
+    audioFile: string;
+    duration?: string | null;
+    artist: { __typename?: "ArtistType"; name: string };
+    album?: {
+      __typename?: "AlbumType";
+      title: string;
+      image?: string | null;
+      externalImageUrl?: string | null;
+    } | null;
   } | null;
 };
 
@@ -1561,3 +1590,76 @@ export const AddToLibraryDocument = {
   AddToLibraryMutation,
   AddToLibraryMutationVariables
 >;
+export const GetSongDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "getSong" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "id" } },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "getSong" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "id" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "id" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "title" } },
+                { kind: "Field", name: { kind: "Name", value: "audioFile" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "artist" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "name" } },
+                    ],
+                  },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "album" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "title" } },
+                      { kind: "Field", name: { kind: "Name", value: "image" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "externalImageUrl" },
+                      },
+                    ],
+                  },
+                },
+                { kind: "Field", name: { kind: "Name", value: "duration" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetSongQuery, GetSongQueryVariables>;

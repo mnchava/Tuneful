@@ -4,7 +4,7 @@ from .models import *
 
 class SongAdmin(admin.ModelAdmin):
     model = Song
-    list_display = ("id", "title", "artists", "index_in_album", "album")
+    list_display = ("id", "title", "artist", "index_in_album", "album")
     search_fields = ("title",)
     ordering = (
         "title",

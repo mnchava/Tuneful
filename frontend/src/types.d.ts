@@ -1,4 +1,4 @@
-import { UserType } from "./models/generated";
+import { UserType } from "./models/gql";
 
 interface IUser {
   dateJoined: string;
@@ -22,7 +22,7 @@ interface ISong {
   price: number;
   title: string;
   album: IAlbum;
-  artist: IArtist[];
+  artist: IArtist;
 }
 
 interface IArtist {

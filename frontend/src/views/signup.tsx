@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CreateUserDocument, CreateUserMutation, CreateUserMutationVariables } from '../models/generated';
+import { CreateUserDocument, CreateUserMutation, CreateUserMutationVariables } from '../models/gql';
 
 interface State {
 	username: string;

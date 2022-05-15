@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client";
 import { Alert, AlertTitle, Avatar, Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import { useState } from "react";
-import { GetAlbumsDocument, GetAlbumsQuery, GetAlbumsQueryVariables } from "../models/generated";
+import { GetAlbumsDocument, GetAlbumsQuery, GetAlbumsQueryVariables } from "../models/gql";
 import AlbumTwoToneIcon from '@mui/icons-material/AlbumTwoTone';
 
 interface ISong {
@@ -14,7 +14,7 @@ interface ISong {
 	price: number;
 	title: string;
 	album?: { __typename?: "AlbumType"; title: string } | null;
-	artist: Array<{ __typename?: "ArtistType"; name: string }>;
+	artist: { __typename?: "ArtistType"; name: string };
 }
 
 export default function Store() {
@@ -60,7 +60,7 @@ export default function Store() {
 						}
 					</Avatar>
 					<Typography fontWeight="800">{n?.title}</Typography>
-					<Typography sx={{ fontSize: "0.8rem" }}>{n?.artist?.name}</Typography>
+					<Typography sx={{ fontSize: "0.8rem" }}>{n?.artist.name}</Typography>
 					<Typography sx={{ fontSize: "0.6rem" }} fontWeight="300">{n?.trackNumber} tracks</Typography>
 					<Chip
 						onClick={() => addAlbum(n?.songSet)}

@@ -26,7 +26,7 @@ class Genre(models.Model):
 
 class Album(models.Model):
     title = models.TextField(max_length=256)
-    artist = models.ForeignKey(Artist, on_delete=models.SET_NULL, null=True)
+    artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING, default="")
     image = models.ImageField(
         blank=True, null=True, default=None, upload_to="image/albums"
     )
@@ -46,7 +46,7 @@ class Song(models.Model):
     album = models.ForeignKey(
         Album, null=True, default=None, on_delete=models.SET_DEFAULT
     )
-    artist = models.ManyToManyField(Artist, verbose_name="Artist for this song.")
+    artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING)
     audio_file = models.FileField(
         upload_to="media/audio/", blank=True, help_text=("Allowed type - .mp3")
     )
@@ -58,9 +58,6 @@ class Song(models.Model):
 
     def __str__(self):
         return f"{self.title} - {', '.join([a.name for a in self.artist.all()])}"
-
-    def artists(self):
-        return ", ".join([a.name for a in self.artist.all()])
 
 
 class Playlist(models.Model):

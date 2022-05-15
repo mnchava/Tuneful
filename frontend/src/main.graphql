@@ -131,3 +131,20 @@ mutation AddToLibrary($libId: ID!, $songIds: [ID]!) {
     added
   }
 }
+
+query getSong($id: ID!) {
+  getSong(id: $id) {
+    id
+    title
+    audioFile
+    artist {
+      name
+    }
+    album {
+      title
+      image
+      externalImageUrl
+    }
+    duration
+  }
+}

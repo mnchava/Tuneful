@@ -1,5 +1,8 @@
 schema: http://3.218.67.164:9019/graphql/
-documents: './src/**/*.graphql'
+documents: "./src/**/*.graphql"
+hooks:
+  afterAllFileWrite:
+    - prettier --write
 generates:
   ./src/models/generated.ts:
     plugins:

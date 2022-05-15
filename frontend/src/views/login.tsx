@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { LoginDocument, LoginMutation, LoginMutationVariables } from '../models/generated';
+import { LoginDocument, LoginMutation, LoginMutationVariables } from '../models/gql';
 
 interface LoginState {
 	username: string;

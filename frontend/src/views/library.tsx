@@ -1,21 +1,10 @@
 import { useQuery } from "@apollo/client";
-import FastForwardIcon from '@mui/icons-material/FastForward';
-import FastRewindIcon from '@mui/icons-material/FastRewind';
-import LoopIcon from '@mui/icons-material/Loop';
-import PauseIcon from '@mui/icons-material/Pause';
-import PauseCircleFilledTwoToneIcon from '@mui/icons-material/PauseCircleFilledTwoTone';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PlayCircleFilledTwoToneIcon from '@mui/icons-material/PlayCircleFilledTwoTone';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
-import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
-import VolumeMuteIcon from '@mui/icons-material/VolumeMute';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { Alert, AlertTitle, Box, CircularProgress, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Typography } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { visuallyHidden } from "@mui/utils";
 import * as React from "react";
-import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player';
-import { GetLibraryDocument, GetLibraryQuery, GetLibraryQueryVariables } from "../models/generated";
+import useLocalStorage from "../hooks/useLocalStorage";
+import { GetLibraryDocument, GetLibraryQuery, GetLibraryQueryVariables } from "../models/gql";
 import { ISong } from "../types";
 import './styles.css';
 
@@ -157,21 +146,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 	);
 };
 
-const playerIcons = {
-	play: <PlayArrowIcon fontSize="large" />,
-	pause: <PauseIcon fontSize="large" />,
-	rewind: <FastRewindIcon fontSize="large" />,
-	forward: <FastForwardIcon fontSize="large" />,
-	previous: <SkipPreviousIcon />,
-	next: <SkipNextIcon />,
-	loop: <LoopIcon />,
-	volume: <VolumeUpIcon />,
-	volumeMute: <VolumeMuteIcon />,
-};
-
 export default function Library() {
-
-	const theme = useTheme();
 
 	var rows: ISong[] = [];
 
@@ -185,8 +160,10 @@ export default function Library() {
 	const [orderBy, setOrderBy] = React.useState<keyof ISong>("id");
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(20);
-	const [currentlyPlaying, setCurrentlyPlaying] = React.useState<ISong>()
-	const [lastPlayed, setLastPlayed] = React.useState<ISong>()
+
+	// const [currentSong, setCurrentSong] = React.useState<ISong>()
+	const [_, setCurrentSong] = useLocalStorage("currentSong", "");
+
 
 	if (loading) return (
 		<Box justifyContent="center" display="flex">
@@ -211,9 +188,6 @@ export default function Library() {
 			setOrderBy(property);
 		};
 
-		const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-		};
-
 		const handleChangePage = (event: unknown, newPage: number) => {
 			setPage(newPage);
 		};
@@ -228,14 +202,7 @@ export default function Library() {
 		const handleClickPlay = (
 			song: ISong
 		) => {
-			if (currentlyPlaying === song) {
-				setCurrentlyPlaying(undefined);
-			} else if (lastPlayed === song) {
-				setCurrentlyPlaying(song);
-			} else {
-				setCurrentlyPlaying(song);
-				setLastPlayed(song);
-			}
+			setCurrentSong(JSON.stringify(song));
 		};
 
 		// Avoid a layout jump when reaching the last page with empty rows.
@@ -265,16 +232,13 @@ export default function Library() {
 											.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 											.map((row, index) => {
 												const labelId = `enhanced-table-checkbox-${index}`;
-												const isPlaying = currentlyPlaying === row;
 
 												return (
 													<TableRow
 														hover
-														onClick={(event) => handleClick(event, row.title)}
 														role="checkbox"
 														tabIndex={-1}
 														key={row.id}
-														sx={isPlaying ? { background: theme.palette.primary.dark } : {}}
 													>
 														<TableCell
 															padding="normal"
@@ -283,11 +247,7 @@ export default function Library() {
 															<IconButton onClick={() => {
 																handleClickPlay(row)
 															}} sx={{ padding: "0" }}>
-																{isPlaying ?
-																	<PauseCircleFilledTwoToneIcon />
-																	:
-																	<PlayCircleFilledTwoToneIcon />
-																}
+																<PlayCircleFilledTwoToneIcon />
 															</IconButton>
 														</TableCell>
 														<TableCell
@@ -298,7 +258,7 @@ export default function Library() {
 														>
 															{row.title}
 														</TableCell>
-														<TableCell width="15%">{row.artist.map((a) => a.name).join(", ")}</TableCell>
+														<TableCell width="15%">{row.artist.name}</TableCell>
 														<TableCell width="15%">{row.album?.title}</TableCell>
 														<TableCell width="5%" align="right">{row.duration}</TableCell>
 													</TableRow>
@@ -328,58 +288,6 @@ export default function Library() {
 						/>
 					</Paper>
 				</Box>
-				<AudioPlayer
-					src={currentlyPlaying ? "http://3.218.67.164:9019/" + currentlyPlaying.audioFile : ""}
-					layout="stacked-reverse"
-					onPlayError={err => console.log(err)}
-					onError={err => console.log(err)}
-					autoPlayAfterSrcChange
-					showSkipControls
-					showJumpControls={false}
-					showFilledVolume
-					autoPlay
-					customIcons={playerIcons}
-					customAdditionalControls={[]}
-					customControlsSection={
-						[
-							RHAP_UI.MAIN_CONTROLS,
-							RHAP_UI.CURRENT_TIME,
-							<div style={{ fontWeight: "800" }}>/</div>,
-							RHAP_UI.DURATION,
-						]
-					}
-					customProgressBarSection={
-						[
-							RHAP_UI.PROGRESS_BAR,
-							RHAP_UI.VOLUME,
-						]
-					}
-					customVolumeControls={[]}
-					style={{
-						width: '340px'
-					}}
-					onClickNext={e => {
-						if (currentlyPlaying) {
-							const index = rows.indexOf(currentlyPlaying);
-							const next = index < rows.length - 1 ? index + 1 : 0;
-							setCurrentlyPlaying(rows[next])
-						}
-					}}
-					onClickPrevious={e => {
-						if (currentlyPlaying) {
-							const index = rows.indexOf(currentlyPlaying);
-							const next = index === 0 ? rows.length - 1 : index - 1;
-							setCurrentlyPlaying(rows[next])
-						}
-					}}
-					onEnded={(e) => {
-						if (currentlyPlaying) {
-							const index = rows.indexOf(currentlyPlaying);
-							const next = index < rows.length - 1 ? index + 1 : 0;
-							setCurrentlyPlaying(rows[next])
-						}
-					}}
-				/>
 			</>
 		);
 	}

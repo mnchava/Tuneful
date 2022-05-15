@@ -7,12 +7,6 @@ from django.db.models import Sum
 from graphql_jwt.decorators import login_required
 
 
-class ArtistType(DjangoObjectType):
-    class Meta:
-        model = Artist
-        fields = "__all__"
-
-
 class SongType(DjangoObjectType):
     class Meta:
         model = Song
@@ -22,6 +16,19 @@ class SongType(DjangoObjectType):
 
     def resolve_duration(self, info):
         return format_duration(self.duration.total_seconds())
+
+
+class ArtistType(DjangoObjectType):
+    class Meta:
+        model = Artist
+        fields = "__all__"
+
+    top_songs = graphene.List(SongType)
+
+    def resolve_top_songs(self, info):
+        songs = Song.objects.filter(artist=self).order_by("likes")
+
+        return songs
 
 
 class AlbumType(DjangoObjectType):

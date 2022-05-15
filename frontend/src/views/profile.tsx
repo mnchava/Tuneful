@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { Alert, AlertTitle, Avatar, Chip, Divider, Grid, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import { UserInfoDocument, UserInfoQuery, UserInfoQueryVariables } from '../models/generated';
+import { UserInfoDocument, UserInfoQuery, UserInfoQueryVariables } from '../models/gql';
 import { IUser } from '../types';
 
 export default function Profile() {
