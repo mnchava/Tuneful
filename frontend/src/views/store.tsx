@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@apollo/client";
-import { Alert, AlertTitle, Avatar, Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import { Alert, AlertTitle, Avatar, Box, Chip, Skeleton, Snackbar, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { AddToLibraryDocument, AddToLibraryMutation, AddToLibraryMutationVariables, GetAlbumsDocument, GetAlbumsQuery, GetAlbumsQueryVariables } from "../models/gql";
 import AlbumTwoToneIcon from '@mui/icons-material/AlbumTwoTone';
@@ -23,16 +23,19 @@ export default function Store() {
 		songs: Set<ISong>
 	}
 
-	const [cart, setCart] = useState<Cart>({ songs: new Set() })
+	const [cart, setCart] = useState<Cart>({ songs: new Set() });
+	const [open, setOpen] = useState(false);
+	const [message, setMessage] = useState("");
 
 	const { loading: albumLoading, error: albumError, data: albumData } = useQuery<GetAlbumsQuery, GetAlbumsQueryVariables>(GetAlbumsDocument)
 
-	const [addSongs, { loading: addLoading, error: addError, data: addData }] = useMutation<AddToLibraryMutation, AddToLibraryMutationVariables>(AddToLibraryDocument, {
+	const [addSongs] = useMutation<AddToLibraryMutation, AddToLibraryMutationVariables>(AddToLibraryDocument, {
 		variables: {
 			songIds: [...cart.songs].map((s) => s.id)
 		},
 		onCompleted: (data) => {
-			console.log(`Added ${data.addToLibrary?.added} songs.`);
+			setMessage(`Added ${data.addToLibrary?.added} songs to your library.`)
+			setOpen(true);
 		}
 	})
 
@@ -75,10 +78,15 @@ export default function Store() {
 					<Chip
 						onClick={() => addAlbum(n?.songSet)}
 						variant="outlined"
-						label={`$${n?.price?.toFixed(2)}`}
+						label={n?.price ? `$${n?.price?.toFixed(2)}` : "$0"}
 					/>
 				</ Box>
 			})}
+			<Snackbar open={open} autoHideDuration={5000}>
+				<Alert severity="success" sx={{ width: '100%' }}>
+					{message}
+				</Alert>
+			</Snackbar>
 		</ Stack>)
 	);
 	else return (<Alert severity="error">

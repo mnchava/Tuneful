@@ -97,7 +97,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function MiniDrawer() {
 	const theme = useTheme();
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(true);
 
 	const [currentSong, setCurrentSong] = useLocalStorage("currentSong", "{}");
 	const [playlist, setPlaylist] = useState<ISong[]>([]);
@@ -107,7 +107,6 @@ export default function MiniDrawer() {
 			setPlaylist(data.getLibrary?.songs || []);
 		}
 	})
-
 
 	let navigate = useNavigate();
 
@@ -139,6 +138,65 @@ export default function MiniDrawer() {
 		textDecoration: "none",
 		color: "#fff",
 	};
+
+	const Player = () => {
+		return <AudioPlayer
+			src={currentSong ? "http://3.218.67.164:9019/" + JSON.parse(currentSong).audioFile : ""}
+			layout="stacked-reverse"
+			style={{
+				margin: "24px auto"
+			}}
+			onPlayError={err => console.log(err)}
+			onError={err => console.log(err)}
+			autoPlayAfterSrcChange
+			showSkipControls
+			showJumpControls={false}
+			showFilledVolume
+			autoPlay
+			customIcons={playerIcons}
+			customAdditionalControls={[]}
+			customControlsSection={
+				[
+					RHAP_UI.VOLUME,
+					RHAP_UI.MAIN_CONTROLS,
+					RHAP_UI.CURRENT_TIME,
+					<div style={{ fontWeight: "800" }}>/</div>,
+					RHAP_UI.DURATION,
+				]
+			}
+			customProgressBarSection={
+				[
+					RHAP_UI.PROGRESS_BAR,
+				]
+			}
+			customVolumeControls={[]}
+			onClickNext={e => {
+				if (currentSong) {
+					let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
+					const index = playlist.indexOf(current);
+					const next = index < playlist.length - 1 ? index + 1 : 0;
+					setCurrentSong(JSON.stringify(playlist[next]));
+				}
+			}}
+			onClickPrevious={e => {
+				if (currentSong) {
+					let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
+					const index = playlist.indexOf(current);
+					const next = index === 0 ? playlist.length - 1 : index - 1;
+					setCurrentSong(JSON.stringify(playlist[next]));
+				}
+			}}
+			onEnded={(e) => {
+				if (currentSong) {
+					let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
+					const index = playlist.indexOf(current);
+					const next = index < playlist.length - 1 ? index + 1 : 0;
+					setCurrentSong(JSON.stringify(playlist[next]));
+				}
+			}}
+			header={PlayerHeader(JSON.parse(currentSong))}
+		/>
+	}
 
 	return (
 		<Box sx={{ display: 'flex' }}>
@@ -243,62 +301,7 @@ export default function MiniDrawer() {
 					/>
 				</Routes>
 				{localStorage.getItem('token') != null ?
-					<AudioPlayer
-						src={currentSong ? "http://3.218.67.164:9019/" + JSON.parse(currentSong).audioFile : ""}
-						layout="stacked-reverse"
-						onPlayError={err => console.log(err)}
-						onError={err => console.log(err)}
-						autoPlayAfterSrcChange
-						showSkipControls
-						showJumpControls={false}
-						showFilledVolume
-						autoPlay
-						customIcons={playerIcons}
-						customAdditionalControls={[]}
-						customControlsSection={
-							[
-								RHAP_UI.VOLUME,
-								RHAP_UI.MAIN_CONTROLS,
-								RHAP_UI.CURRENT_TIME,
-								<div style={{ fontWeight: "800" }}>/</div>,
-								RHAP_UI.DURATION,
-							]
-						}
-						customProgressBarSection={
-							[
-								RHAP_UI.PROGRESS_BAR,
-							]
-						}
-						customVolumeControls={[]}
-						style={{
-							margin: "24px auto"
-						}}
-						onClickNext={e => {
-							if (currentSong) {
-								let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
-								const index = playlist.indexOf(current);
-								const next = index < playlist.length - 1 ? index + 1 : 0;
-								setCurrentSong(JSON.stringify(playlist[next]));
-							}
-						}}
-						onClickPrevious={e => {
-							if (currentSong) {
-								let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
-								const index = playlist.indexOf(current);
-								const next = index === 0 ? playlist.length - 1 : index - 1;
-								setCurrentSong(JSON.stringify(playlist[next]));
-							}
-						}}
-						onEnded={(e) => {
-							if (currentSong) {
-								let current = playlist.filter((value) => value.id === JSON.parse(currentSong).id)[0];
-								const index = playlist.indexOf(current);
-								const next = index < playlist.length - 1 ? index + 1 : 0;
-								setCurrentSong(JSON.stringify(playlist[next]));
-							}
-						}}
-						header={PlayerHeader(JSON.parse(currentSong))}
-					/> : <></>}
+					Player() : <></>}
 			</Box>
 		</Box >
 	);
