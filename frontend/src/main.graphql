@@ -126,8 +126,8 @@ query GetAlbums {
   }
 }
 
-mutation AddToLibrary($libId: ID!, $songIds: [ID]!) {
-  addToLibrary(libId: $libId, songIds: $songIds) {
+mutation AddToLibrary($songIds: [ID]!) {
+  addToLibrary(songIds: $songIds) {
     added
   }
 }

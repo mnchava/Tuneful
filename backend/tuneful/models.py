@@ -57,7 +57,7 @@ class Song(models.Model):
     title = models.TextField(max_length=256)
 
     def __str__(self):
-        return f"{self.title} - {', '.join([a.name for a in self.artist.all()])}"
+        return f"{self.title} - {self.artist.name}"
 
 
 class Playlist(models.Model):

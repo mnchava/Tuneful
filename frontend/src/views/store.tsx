@@ -1,7 +1,7 @@
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { Alert, AlertTitle, Avatar, Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import { useState } from "react";
-import { GetAlbumsDocument, GetAlbumsQuery, GetAlbumsQueryVariables } from "../models/gql";
+import { AddToLibraryDocument, AddToLibraryMutation, AddToLibraryMutationVariables, GetAlbumsDocument, GetAlbumsQuery, GetAlbumsQueryVariables } from "../models/gql";
 import AlbumTwoToneIcon from '@mui/icons-material/AlbumTwoTone';
 
 interface ISong {
@@ -23,15 +23,25 @@ export default function Store() {
 		songs: Set<ISong>
 	}
 
-	const { loading: albumLoading, error: albumError, data: albumData } = useQuery<GetAlbumsQuery, GetAlbumsQueryVariables>(GetAlbumsDocument)
-
 	const [cart, setCart] = useState<Cart>({ songs: new Set() })
 
-	function addAlbum(songs: ISong[]) {
-		setCart({
-			songs: new Set([...cart.songs, ...songs])
+	const { loading: albumLoading, error: albumError, data: albumData } = useQuery<GetAlbumsQuery, GetAlbumsQueryVariables>(GetAlbumsDocument)
+
+	const [addSongs, { loading: addLoading, error: addError, data: addData }] = useMutation<AddToLibraryMutation, AddToLibraryMutationVariables>(AddToLibraryDocument, {
+		variables: {
+			songIds: [...cart.songs].map((s) => s.id)
+		},
+		onCompleted: (data) => {
+			console.log(`Added ${data.addToLibrary?.added} songs.`);
+		}
+	})
+
+	async function addAlbum(songs: ISong[]) {
+		await setCart({
+			songs: new Set([...(cart.songs), ...songs])
 		})
 		console.log(cart.songs)
+		addSongs()
 	}
 
 	if (albumLoading) return <Stack direction="row" spacing={3} overflow="auto">

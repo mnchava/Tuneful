@@ -813,12 +813,12 @@ export type GetLibraryQuery = {
       __typename?: "SongType";
       id: string;
       audioFile: string;
-      duration: string;
+      duration?: string | null;
       indexInAlbum: number;
       likes: number;
       price: number;
       title: string;
-      album: {
+      album?: {
         __typename?: "AlbumType";
         id: string;
         title: string;
@@ -826,18 +826,11 @@ export type GetLibraryQuery = {
         externalImageUrl?: string | null;
         releaseDate: any;
         likes: number;
-        albumDuration: string;
-        price: number;
-        trackNumber: number;
-      };
-      artist: {
-        id: string;
-        name: string;
-        country: string;
-        followers: number;
-        externalImageUrl: string;
-        image: string;
-      };
+        albumDuration?: string | null;
+        price?: number | null;
+        trackNumber?: number | null;
+      } | null;
+      artist: { __typename?: "ArtistType"; name: string };
     }>;
   } | null;
 };

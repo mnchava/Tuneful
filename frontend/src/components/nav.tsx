@@ -271,9 +271,6 @@ export default function MiniDrawer() {
 						}
 						customVolumeControls={[]}
 						style={{
-							// width: `calc(100%${open ? "-180px" : ""})`,
-							// position: "absolute",
-							// bottom: 3
 							margin: "24px auto"
 						}}
 						onClickNext={e => {

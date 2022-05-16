@@ -79,15 +79,15 @@ class UserLibraryType(DjangoObjectType):
 
 class LibraryMutation(graphene.Mutation):
     class Arguments:
-        lib_id = graphene.ID(required=True)
         song_ids = graphene.List(graphene.ID, required=True)
 
     added = graphene.Int()
 
     @classmethod
     @login_required
-    def mutate(cls, root, info, lib_id, song_ids: list):
-        library = UserLibrary.objects.get(pk=lib_id)
+    def mutate(cls, root, info, song_ids: list):
+        library = UserLibrary.objects.get(pk=info.context.user.id)
+        # library = info.context.user.user_library
         songs = []
 
         for sId in song_ids:
